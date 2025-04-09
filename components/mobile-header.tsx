@@ -35,7 +35,7 @@ export function MobileHeader() {
           <span className="sr-only">Toggle menu</span>
         </Button>
         <Link href="/dashboard" className="flex items-center">
-          <span className="text-xl font-bold">GroceryApp</span>
+          <span className="text-xl font-bold">Shopit</span>
         </Link>
       </div>
 
