@@ -27,7 +27,8 @@ export function RegisterForm() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Proceed with registration
+      const { error: signUpError, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -37,12 +38,41 @@ export function RegisterForm() {
         },
       })
 
-      if (error) throw error
+      if (signUpError) {
+        if (signUpError.status === 429) {
+          throw new Error("We're experiencing high traffic. Please wait a moment and try again.")
+        } 
+        
+        // Check for database errors related to the trigger
+        if (signUpError.message.includes("Database error")) {
+          console.error("Database error details:", signUpError);
+          throw new Error("There was an issue creating your profile. The database trigger may have failed. Please try again or contact support with error code: DB-TRIGGER");
+        }
+        
+        throw signUpError;
+      }
 
-      router.push("/")
+      // Successfully created account
+      router.push("/login?registered=true")
       router.refresh()
     } catch (error: any) {
-      setError(error.message || "An error occurred during registration")
+      console.error("Registration error:", error);
+      
+      // Handle specific error messages
+      if (error.message?.includes("rate limit")) {
+        setError("We're experiencing high traffic. Please wait a moment and try again.");
+      } else if (error.message?.includes("already registered")) {
+        setError(error.message);
+      } else if (error.message?.includes("DB-TRIGGER")) {
+        setError(error.message);
+      } else if (error.message?.includes("duplicate key value")) {
+        setError("This email is already registered. Please use a different email or try logging in.");
+      } else if (error.message?.includes("Database error")) {
+        setError("A database error occurred during profile creation. Please try again or contact support.");
+      } else {
+        // For other errors, provide a generic message but log the full error
+        setError(error.message || "An error occurred during registration");
+      }
     } finally {
       setLoading(false)
     }
