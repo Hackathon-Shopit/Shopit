@@ -76,7 +76,7 @@ export function SidebarNav() {
     <Sidebar open={isOpen} onOpenChange={closeSidebar} className="border-r">
       <SidebarHeader className="flex items-center justify-between p-4">
         <Link href="/dashboard" className="flex items-center space-x-2" onClick={closeSidebar}>
-          <span className="text-xl font-bold">GroceryApp</span>
+          <span className="text-xl font-bold">Shopit</span>
         </Link>
       </SidebarHeader>
 
