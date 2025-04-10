@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ChatInterface } from "@/components/chat-interface"
+import { SimplifiedChat } from "@/components/simplified-chat"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
 
@@ -54,6 +54,7 @@ export default function ChatPage() {
         </Alert>
       ) : (
         <ChatInterface />
+        <SimplifiedChat />
       )}
     </div>
   )
