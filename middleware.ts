@@ -59,7 +59,7 @@ export async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname
     
     // Define auth routes - these are the routes that don't require authentication
-    const isAuthRoute = path === "/login" || path === "/register"
+    const isAuthRoute = path === "/login" || path === "/register" || path.startsWith("/auth/")
     
     // Skip session checks for static files and non-HTML requests
     const isStaticFile = path.match(/\.(css|js|svg|png|jpg|jpeg|gif|ico|json|woff|woff2|ttf|eot)$/i)
@@ -106,7 +106,8 @@ export async function middleware(req: NextRequest) {
     }
 
     // Define protected routes - these require authentication
-    const isProtectedRoute = !isAuthRoute && path !== "/_next" && !path.startsWith("/_next/")
+    // Specifically protect dashboard routes
+    const isProtectedRoute = path.startsWith("/dashboard")
 
     // Check if the user is authenticated
     if (!session) {
