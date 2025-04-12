@@ -10,13 +10,17 @@ const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+const SIDEBAR_COLLAPSED_WIDTH = "4rem" // Width when collapsed to icons only
 
 // Create a context for the sidebar
 interface SidebarContextType {
   isOpen: boolean
+  isCollapsed: boolean
   toggleSidebar: () => void
   openSidebar: () => void
   closeSidebar: () => void
+  toggleCollapsed: () => void
+  setCollapsed: (collapsed: boolean) => void
 }
 
 const SidebarContext = React.createContext<SidebarContextType | undefined>(undefined)
@@ -31,13 +35,17 @@ export function useSidebar() {
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = React.useState(false)
+  const [isCollapsed, setIsCollapsed] = React.useState(false)
 
   const toggleSidebar = () => setIsOpen((prev) => !prev)
   const openSidebar = () => setIsOpen(true)
   const closeSidebar = () => setIsOpen(false)
+  
+  const toggleCollapsed = () => setIsCollapsed((prev) => !prev)
+  const setCollapsed = (collapsed: boolean) => setIsCollapsed(collapsed)
 
   return (
-    <SidebarContext.Provider value={{ isOpen, toggleSidebar, openSidebar, closeSidebar }}>
+    <SidebarContext.Provider value={{ isOpen, isCollapsed, toggleSidebar, openSidebar, closeSidebar, toggleCollapsed, setCollapsed }}>
       {children}
     </SidebarContext.Provider>
   )
@@ -50,7 +58,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function Sidebar({ className, open, onOpenChange, ...props }: SidebarProps) {
-  const { isOpen } = useSidebar()
+  const { isOpen, isCollapsed } = useSidebar()
   const openState = open !== undefined ? open : isOpen
 
   React.useEffect(() => {
@@ -62,7 +70,8 @@ export function Sidebar({ className, open, onOpenChange, ...props }: SidebarProp
   return (
     <div
       className={cn(
-        "fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-background transition-transform duration-300 ease-in-out md:static",
+        "fixed inset-y-0 left-0 z-20 flex flex-col bg-background transition-all duration-300 ease-in-out md:static",
+        isCollapsed ? "w-16" : "w-64", // Adjust width based on collapsed state
         openState ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         className,
       )}
@@ -126,13 +135,14 @@ SidebarMenuButton.displayName = "SidebarMenuButton"
 
 // Sidebar inset (main content area)
 export function SidebarInset({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  const { isOpen } = useSidebar()
+  const { isOpen, isCollapsed } = useSidebar()
 
   return (
     <div
       className={cn(
         "relative flex-1 overflow-auto transition-all duration-300 ease-in-out",
-        isOpen && "md:ml-64",
+        isOpen && !isCollapsed && "md:ml-64",
+        isOpen && isCollapsed && "md:ml-16",
         className,
       )}
       {...props}

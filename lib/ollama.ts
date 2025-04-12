@@ -6,7 +6,6 @@ const baseURL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434/api';
 // Create the Ollama provider
 export const ollama = createOllama({
   baseURL,
-  headers: process.env.OLLAMA_HEADERS ? JSON.parse(process.env.OLLAMA_HEADERS) : {},
 });
 
 // Default model to use with Ollama

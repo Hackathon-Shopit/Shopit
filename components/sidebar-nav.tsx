@@ -4,7 +4,7 @@ import type React from "react"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, MessageSquare, Heart, Settings, Search, LogOut } from "lucide-react"
+import { Home, MessageSquare, Heart, Settings, Search, LogOut, ChevronLeft, ChevronRight } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -57,7 +57,7 @@ const navItems: NavItem[] = [
 export function SidebarNav() {
   const pathname = usePathname()
   const { user, signOut, userProfile } = useUser()
-  const { isOpen, closeSidebar } = useSidebar()
+  const { isOpen, isCollapsed, closeSidebar, toggleCollapsed } = useSidebar()
 
   const getInitials = (name: string) => {
     return name
@@ -76,8 +76,18 @@ export function SidebarNav() {
     <Sidebar open={isOpen} onOpenChange={closeSidebar} className="border-r">
       <SidebarHeader className="flex items-center justify-between p-4">
         <Link href="/dashboard" className="flex items-center space-x-2" onClick={closeSidebar}>
-          <span className="text-xl font-bold">Shopit</span>
+          <span className={`text-xl font-bold ${isCollapsed ? 'hidden' : 'block'}`}>Shopit</span>
+          {isCollapsed && <span className="text-xl font-bold">S</span>}
         </Link>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={toggleCollapsed} 
+          className="ml-auto"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </Button>
       </SidebarHeader>
 
       {user && (
@@ -86,10 +96,12 @@ export function SidebarNav() {
             <Avatar>
               <AvatarFallback>{getInitials(userProfile.name || "User")}</AvatarFallback>
             </Avatar>
-            <div>
-              <p className="font-medium">{userProfile.name}</p>
-              <p className="text-sm text-muted-foreground">{userProfile.email}</p>
-            </div>
+            {!isCollapsed && (
+              <div>
+                <p className="font-medium">{userProfile.name}</p>
+                <p className="text-sm text-muted-foreground">{userProfile.email}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -100,8 +112,8 @@ export function SidebarNav() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title} onClick={closeSidebar}>
                 <Link href={item.href} className="flex items-center">
-                  <item.icon className="mr-2 h-5 w-5" />
-                  <span>{item.title}</span>
+                  <item.icon className={`${isCollapsed ? 'mx-auto' : 'mr-2'} h-5 w-5`} />
+                  {!isCollapsed && <span>{item.title}</span>}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -111,9 +123,13 @@ export function SidebarNav() {
       <SidebarFooter className="p-4 space-y-4">
         <ModeToggle />
         {user && (
-          <Button variant="outline" className="w-full justify-start" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign out
+          <Button 
+            variant="outline" 
+            className={`w-full ${isCollapsed ? 'justify-center p-2' : 'justify-start'}`} 
+            onClick={handleSignOut}
+          >
+            <LogOut className={`${isCollapsed ? 'mx-0' : 'mr-2'} h-4 w-4`} />
+            {!isCollapsed && <span>Sign out</span>}
           </Button>
         )}
       </SidebarFooter>
