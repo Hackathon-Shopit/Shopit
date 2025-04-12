@@ -51,6 +51,8 @@
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
     "next-themes": "latest",
+    "ollama-ai-provider": "^1.2.0",
+    "openai": "latest",
     "react": "^19",
     "react-day-picker": "8.10.1",
     "react-dom": "^19",
@@ -61,8 +63,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
-    "ws": "latest",
-    "openai": "latest"
+    "ws": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
