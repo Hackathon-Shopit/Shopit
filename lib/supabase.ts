@@ -15,10 +15,18 @@ const sessionExpirySeconds =
 const tokenRefreshMarginSeconds = 
   parseInt(process.env.NEXT_PUBLIC_SUPABASE_AUTH_TOKEN_REFRESH_MARGIN || '604800', 10)
 
+// Store a single instance of the Supabase client
+let supabaseInstance: ReturnType<typeof createSupabaseClient<Database>> | null = null
+
 /**
  * Creates a Supabase client with retry logic for handling rate limits
+ * Implements singleton pattern to prevent multiple instances
  */
 export const createClient = () => {
+  // Return existing instance if already created
+  if (supabaseInstance) return supabaseInstance
+  
+  // Only create a new instance if one doesn't exist
   const supabase = createSupabaseClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -77,41 +85,12 @@ export const createClient = () => {
     }
   )
   
+  // Store the instance for future use
+  supabaseInstance = supabase
   return supabase
 }
 
-// No more global supabase instance!
-
-// This approach ensures we only create the client on the client side
-// and only create it once
-
-// For server-side rendering
-// const createServerSupabaseClient = () => {
-//   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-//   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-//   return createClient(supabaseUrl, supabaseAnonKey)
-// }
-
-// // For client-side rendering
-// let browserSupabase: ReturnType<typeof createClient> | null = null
-
-// const createBrowserSupabaseClient = () => {
-//   if (browserSupabase) return browserSupabase
-
-//   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-//   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-//   browserSupabase = createClient(supabaseUrl, supabaseAnonKey)
-//   return browserSupabase
-// }
-
-// export const getSupabase = () => {
-//   if (typeof window === "undefined") {
-//     // Server-side
-//     return createServerSupabaseClient()
-//   }
-//   // Client-side
-//   return createBrowserSupabaseClient()
-// }
-
-// For backward compatibility
-// export const supabase = getSupabase()
+// Reset function for testing purposes
+export const resetSupabaseClient = () => {
+  supabaseInstance = null
+}

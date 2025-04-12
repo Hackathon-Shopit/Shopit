@@ -53,8 +53,9 @@ export default function ChatPage() {
           </AlertDescription>
         </Alert>
       ) : (
-        <ChatInterface />
-        <SimplifiedChat />
+        <>
+          <SimplifiedChat />
+        </>
       )}
     </div>
   )

@@ -116,7 +116,9 @@ interface SidebarMenuButtonProps
 }
 
 export const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
-  ({ className, isActive, tooltip, ...props }, ref) => {
+  ({ className, isActive, tooltip, asChild, ...props }, ref) => {
+    // Explicitly remove asChild from props to avoid passing it to the DOM element
+    // This prevents the React warning
     return <button ref={ref} className={cn(menuButtonVariants({ isActive }), className)} title={tooltip} {...props} />
   },
 )
