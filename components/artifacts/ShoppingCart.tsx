@@ -9,6 +9,26 @@ export const ShoppingCart = () => {
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
 
+  // Function to handle stagehand API request
+  const handleStagehandRequest = async (itemName: string) => {
+    try {
+      const response = await fetch("/api/stagehand", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: itemName }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error calling Stagehand API:", errorData);
+      }
+    } catch (error) {
+      console.error("Failed to call Stagehand API:", error);
+    }
+  };
+
   // Basic aggregation logic (optional, but good for carts)
   // This groups items by name and sums quantities. Assumes unit is consistent for now.
   const aggregatedItems = items.reduce((acc, item) => {
@@ -46,7 +66,13 @@ export const ShoppingCart = () => {
           {aggregatedItems.map((item, index) => (
             <li key={`${item.name}-${index}`} className="flex items-center justify-between border-b pb-2 gap-2">
               <div className="flex-1">
-                <span className="font-medium">{item.name}</span>
+                {/* Make item name clickable with POST request to stagehand API */}
+                <span 
+                  className="font-medium hover:underline cursor-pointer"
+                  onClick={() => handleStagehandRequest(item.name)}
+                >
+                  {item.name}
+                </span>
               </div>
               <span className="text-muted-foreground text-sm whitespace-nowrap">
                 {item.quantity} {item.unit}
