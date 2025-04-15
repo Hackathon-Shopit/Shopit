@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { videoRecipeTool } from '@/tools/youtube-recipe-tool';
+import { webpageScraperTool } from '@/tools/webpage-scraper-tool';
 
 // Define the ingredient schema to ensure proper typing
 const ingredientSchema = z.object({
@@ -35,8 +36,23 @@ export const shoppingCartTool = tool({
   },
 });
 
+// Tool to process Markdown scraped from a webpage
+export const processWebpageMarkdown = tool({
+  description: 'Processes Markdown from a scraped webpage for AI analysis or summarization.',
+  parameters: z.object({
+    markdown: z.string().describe('The Markdown content scraped from a webpage.'),
+  }),
+  // This can be extended to do more with the markdown if needed
+  execute: async ({ markdown }) => {
+    // For now, just return the markdown for the AI to process
+    return { markdown };
+  },
+});
+
 export const tools = {
   displayRecipeIngredients: recipeIngredientsTool,
   displayShoppingCart: shoppingCartTool,
   video_recipe: videoRecipeTool,
+  processWebpageMarkdown,
+  webpage_scraper: webpageScraperTool,
 };
