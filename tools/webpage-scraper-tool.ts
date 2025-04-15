@@ -1,6 +1,8 @@
 // tools/webpage-scraper-tool.ts
 import { z } from 'zod';
 import { tool } from 'ai';
+import { streamText } from 'ai';
+import FirecrawlApp from 'firecrawl';
 
 // Define the schema for the tool parameters
 export const webpageScraperToolParamsSchema = z.object({
@@ -12,57 +14,45 @@ export const webpageScraperToolOutputSchema = z.object({
   markdown: z.string().describe('The Markdown content scraped from the webpage.'),
 });
 
+// Initialize Firecrawl client outside the function
+const apiKey = process.env.FIRECRAWL_API_KEY;
+if (!apiKey) {
+  console.error('[Tool Error] Firecrawl API key is missing.');
+}
+const firecrawl = apiKey ? new FirecrawlApp({ apiKey }) : null;
+
 export const webpageScraperTool = tool({
   description: 'Scrapes the given webpage URL using Firecrawl and returns Markdown content. Use this when a user asks to analyze, summarize, or extract content from a webpage or URL.',
   parameters: webpageScraperToolParamsSchema,
   execute: async ({ url }) => {
     console.log(`[Tool Execution] webpage_scraper called with url: "${url}"`);
+    if (!firecrawl) {
+      return { markdown: 'Firecrawl API key is missing or Firecrawl client not initialized.' };
+    }
     try {
-      // Use absolute URL on server, relative on client
-      let apiUrl = '/api/scrape';
-      if (typeof window === 'undefined') {
-        // Server-side: must use absolute URL
-        const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        apiUrl = `${base}/api/scrape`;
+      // Scrape the webpage for markdown
+      const result = await firecrawl.scrapeUrl(url, { formats: ['markdown'] });
+      if (result && typeof result === 'object' && 'error' in result) {
+        console.error('[Tool Error] Firecrawl error:', result.error);
+        return { markdown: `Error scraping URL: ${url}. ${result.error}` };
       }
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-      let debugInfo = `Request: POST ${apiUrl} with body { url: ${url} }\n`;
-      debugInfo += `Response status: ${res.status}\n`;
-      let data: any = {};
-      try {
-        data = await res.json();
-        debugInfo += `Response body: ${JSON.stringify(data)}\n`;
-      } catch (jsonErr) {
-        debugInfo += `Failed to parse JSON response: ${jsonErr}\n`;
+      if (!result.markdown) {
+        return { markdown: `No markdown returned for URL: ${url}.` };
       }
-      if (!res.ok) {
-        return {
-          markdown: `Failed to scrape URL: ${url}. Status: ${res.status}\n${debugInfo}`
-        };
-      }
-      if (data.error) {
-        return {
-          markdown: `Error scraping URL: ${url}. ${data.error}\n${debugInfo}`
-        };
-      }
-      if (!data.markdown) {
-        return {
-          markdown: `No markdown returned for URL: ${url}.\n${debugInfo}`
-        };
-      }
-      return {
-        markdown: data.markdown,
-        debug: debugInfo
-      };
+      // Optionally, process the markdown with OpenAI (like video_recipe uses openai)
+      // const processed = await streamText({
+      //   model: openai('gpt-4o'),
+      //   system: 'You are a markdown processor.',
+      //   messages: [
+      //     { role: 'user', content: result.markdown }
+      //   ],
+      //   maxTokens: 1000,
+      // });
+      // return { markdown: processed.text };
+      return { markdown: result.markdown };
     } catch (error: any) {
-      return {
-        markdown: `Exception thrown scraping URL: ${url}. ${error?.message || error}`,
-        debug: `Stack: ${error?.stack || 'No stack.'}`
-      };
+      console.error('[Tool Error] Exception thrown scraping URL:', error);
+      return { markdown: `Exception thrown scraping URL: ${url}. ${error?.message || error}` };
     }
   },
 });

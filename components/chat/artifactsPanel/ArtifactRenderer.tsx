@@ -1,6 +1,7 @@
 import { RecipeIngredients } from '@/components/artifacts/recipe-ingredients';
 import { ShoppingCart } from '@/components/artifacts/ShoppingCart';
 import { YouTubeVideoResults } from '@/components/artifacts/YouTubeVideoResults'; 
+import { WebpageMarkdownArtifact } from '@/components/artifacts/WebpageMarkdownArtifact';
 
 interface ArtifactRendererProps {
   toolName: string;
@@ -18,6 +19,9 @@ export function ArtifactRenderer({ toolName, toolResult, toolCallId }: ArtifactR
 
     case 'video_recipe':
       return <YouTubeVideoResults {...toolResult as any} />;
+
+    case 'webpage_scraper':
+      return <WebpageMarkdownArtifact artifact={toolResult as any} />;
 
     default:
       console.warn(`No artifact renderer found for tool: ${toolName}`);
